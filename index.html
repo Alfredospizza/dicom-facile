@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<title>DICOM Facile</title>
+<meta name="description" content="Converti i file DICOM (.dcm) di un esame in PDF e JPG direttamente sul tuo telefono. I file non vengono caricati da nessuna parte.">
+<meta name="theme-color" content="#0f6b6b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f6b6b'/%3E%3Cpath d='M20 18h14a14 14 0 0 1 0 28H20z' fill='none' stroke='white' stroke-width='6'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f4f6f6;
+  --surface: #ffffff;
+  --surface-2: #eef3f3;
+  --text: #15201f;
+  --muted: #5b6b69;
+  --border: #d9e1e0;
+  --accent: #0f6b6b;
+  --accent-text: #ffffff;
+  --accent-soft: #e0f0ef;
+  --warn: #8a4b00;
+  --warn-soft: #fff3e0;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(16, 32, 31, .06), 0 4px 16px rgba(16, 32, 31, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1514;
+    --surface: #18201f;
+    --surface-2: #1f2a29;
+    --text: #e6eeed;
+    --muted: #9db0ad;
+    --border: #2c3a38;
+    --accent: #4fb8b0;
+    --accent-text: #08201e;
+    --accent-soft: #173533;
+    --warn: #ffb766;
+    --warn-soft: #33260f;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1514; --surface: #18201f; --surface-2: #1f2a29; --text: #e6eeed; --muted: #9db0ad;
+  --border: #2c3a38; --accent: #4fb8b0; --accent-text: #08201e; --accent-soft: #173533;
+  --warn: #ffb766; --warn-soft: #33260f; --shadow: none;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+main { max-width: 760px; margin: 0 auto; padding: 28px 16px 48px; }
+h1 { font-size: 1.9rem; line-height: 1.15; margin: 0 0 8px; letter-spacing: -.01em; }
+h2 { font-size: 1.15rem; margin: 0 0 12px; }
+h3 { font-size: 1rem; margin: 0; }
+p { margin: 0 0 12px; }
+.lead { color: var(--muted); font-size: 1.05rem; margin-bottom: 20px; }
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; font-weight: 700; color: var(--accent); }
+.brand svg { width: 30px; height: 30px; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.privacy { display: flex; gap: 12px; background: var(--accent-soft); border-color: transparent; box-shadow: none; }
+.privacy svg { flex: 0 0 24px; height: 24px; color: var(--accent); margin-top: 2px; }
+.privacy p { margin: 0; }
+.drop {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 28px 18px;
+  text-align: center;
+  transition: border-color .15s, background .15s;
+}
+.drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop p { color: var(--muted); margin: 12px 0 0; font-size: .95rem; }
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.btn.big { font-size: 1.1rem; min-height: 56px; padding: 14px 28px; }
+.btn[disabled] { opacity: .5; cursor: default; }
+.btn svg { width: 20px; height: 20px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.actions { display: grid; gap: 10px; }
+@media (min-width: 560px) { .actions { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); } }
+.option { display: flex; align-items: center; gap: 10px; margin-top: 16px; justify-content: center; color: var(--muted); font-size: .95rem; }
+.option input { width: 20px; height: 20px; accent-color: var(--accent); }
+details { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+details:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+details ol { margin: 8px 0 4px; padding-left: 22px; }
+details li { margin-bottom: 6px; }
+.progress { height: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 12px 0 8px; }
+.progress div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.muted { color: var(--muted); }
+.small { font-size: .9rem; }
+.ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+dl.summary { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0 0 18px; }
+dl.summary dt { color: var(--muted); }
+dl.summary dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.notice { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 12px 14px; font-size: .95rem; margin-top: 14px; }
+.notice ul { margin: 6px 0 0; padding-left: 20px; }
+.reports { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.reports li { display: flex; align-items: center; gap: 10px; justify-content: space-between; background: var(--surface-2); border-radius: 10px; padding: 8px 8px 8px 14px; }
+.reports li span { min-width: 0; flex: 1; }
+.series { margin-top: 18px; }
+.series-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+.thumb { appearance: none; border: 0; padding: 0; background: #000; border-radius: 8px; overflow: hidden; aspect-ratio: 1; cursor: zoom-in; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.more { margin-top: 8px; }
+.viewer {
+  position: fixed; inset: 0; z-index: 10;
+  background: rgba(0, 0, 0, .94); color: #fff;
+  display: grid; grid-template-rows: auto 1fr auto;
+}
+.viewer[hidden] { display: none; }
+.viewer header, .viewer footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; padding-top: max(10px, env(safe-area-inset-top)); }
+.viewer footer { padding-bottom: max(12px, env(safe-area-inset-bottom)); justify-content: center; }
+.viewer .stage { display: flex; align-items: center; justify-content: center; min-height: 0; padding: 0 8px; }
+.viewer .stage img { max-width: 100%; max-height: 100%; object-fit: contain; -webkit-touch-callout: default; }
+.viewer .btn { background: rgba(255,255,255,.12); color: #fff; border-color: transparent; min-height: 44px; padding: 10px 16px; }
+.viewer .caption { font-size: .9rem; opacity: .85; min-width: 0; }
+footer.site { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 28px; }
+footer.site a { color: inherit; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand" aria-hidden="true">
+    <svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="currentColor"/><path d="M20 18h14a14 14 0 0 1 0 28H20z" fill="none" stroke="#fff" stroke-width="6"/></svg>
+    DICOM Facile
+  </div>
+
+  <section id="start">
+    <h1>Apri le immagini di un esame su qualsiasi dispositivo</h1>
+    <p class="lead">Trasforma i file DICOM (.dcm) di TAC, risonanze, radiografie ed ecografie in un PDF e in immagini JPG, pronti da inviare.</p>
+
+    <div class="card privacy">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      <p><strong>I file restano sul tuo dispositivo.</strong> La conversione avviene dentro il browser: nessun caricamento su server, nessun account, nessun tracciamento. La pagina è bloccata in modo da non poter inviare dati.</p>
+    </div>
+
+    <div class="card">
+      <div class="drop" id="drop">
+        <div class="row">
+          <button class="btn primary big" id="pick" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+            Scegli i file
+          </button>
+          <button class="btn big" id="pickDir" type="button" hidden>Scegli una cartella</button>
+        </div>
+        <p id="dropHint">Puoi scegliere più file .dcm insieme, oppure un file .zip con tutta la cartella.</p>
+        <input type="file" id="fileInput" multiple hidden>
+        <input type="file" id="dirInput" webkitdirectory multiple hidden>
+      </div>
+      <label class="option"><input type="checkbox" id="showName" checked> Mostra il nome del paziente nel PDF</label>
+    </div>
+
+    <div class="card">
+      <details>
+        <summary>Come fare su iPhone o iPad</summary>
+        <ol>
+          <li>Apri l'app <strong>File</strong> e trova la cartella con le immagini dell'esame.</li>
+          <li>Tieni premuto sulla cartella e scegli <strong>Comprimi</strong>: si crea un file <em>.zip</em>.</li>
+          <li>Torna qui, tocca <strong>Scegli i file</strong> → <strong>Sfoglia</strong> e seleziona il file .zip.</li>
+        </ol>
+        <p class="small muted">Se i file sono arrivati per email o WhatsApp, prima salvali nell'app File (“Salva in File”).</p>
+      </details>
+      <details>
+        <summary>Come fare su Android</summary>
+        <ol>
+          <li>Tocca <strong>Scegli i file</strong> e seleziona i file dell'esame (puoi selezionarne molti tenendo premuto).</li>
+          <li>Se sono in una cartella compressa (.zip), scegli direttamente lo .zip.</li>
+        </ol>
+      </details>
+      <details>
+        <summary>Come fare su computer</summary>
+        <p>Trascina in questo riquadro la cartella dell'esame (anche quella copiata dal CD), oppure usa <strong>Scegli una cartella</strong>.</p>
+      </details>
+      <details>
+        <summary>Cosa ottengo?</summary>
+        <ul>
+          <li>Un <strong>PDF unico</strong> con una pagina di riepilogo e tutte le immagini, ordinate per serie.</li>
+          <li>Tutte le <strong>immagini in JPG</strong>, in un file .zip diviso per serie.</li>
+          <li>Gli eventuali <strong>referti PDF</strong> trovati tra i file.</li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <section id="working" class="card" hidden aria-live="polite">
+    <h2 id="workTitle">Sto convertendo…</h2>
+    <div class="progress"><div id="bar"></div></div>
+    <p class="small muted ellipsis" id="workDetail">&nbsp;</p>
+  </section>
+
+  <section id="result" hidden>
+    <div class="card">
+      <h2 id="resultTitle">Fatto!</h2>
+      <dl class="summary" id="summary"></dl>
+      <div class="actions">
+        <button class="btn primary big" id="sharePdf" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 8 5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+          Invia il PDF
+        </button>
+        <a class="btn big" id="downloadPdf" download>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Scarica il PDF
+        </a>
+        <button class="btn" id="downloadZip" type="button">Scarica le immagini JPG (.zip)</button>
+      </div>
+      <div id="warnings"></div>
+    </div>
+
+    <div class="card" id="reportsCard" hidden>
+      <h2>Referti trovati</h2>
+      <ul class="reports" id="reports"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Immagini</h2>
+      <p class="small muted">Tocca un'immagine per ingrandirla. Per salvarne una nelle Foto, tienila premuta.</p>
+      <div id="gallery"></div>
+    </div>
+
+    <div class="card">
+      <p class="small"><strong>Da sapere:</strong> PDF e JPG vanno benissimo per vedere e condividere l'esame. Per una valutazione diagnostica il medico potrebbe chiedere anche i file DICOM originali: conservali.</p>
+      <div class="row"><button class="btn" id="again" type="button">Converti altri file</button></div>
+    </div>
+  </section>
+
+  <footer class="site">
+    Nessun file viene caricato: tutto avviene sul tuo dispositivo.<br>
+    Software open source: daikon, jsPDF, JSZip — <a href="lib/LICENSES.txt">licenze</a>.
+  </footer>
+</main>
+
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="Immagine ingrandita">
+  <header>
+    <span class="caption ellipsis" id="viewerCaption"></span>
+    <button class="btn" id="viewerClose" type="button">Chiudi</button>
+  </header>
+  <div class="stage"><img id="viewerImg" alt=""></div>
+  <footer>
+    <button class="btn" id="viewerPrev" type="button" aria-label="Immagine precedente">‹ Prec.</button>
+    <button class="btn" id="viewerNext" type="button" aria-label="Immagine successiva">Succ. ›</button>
+  </footer>
+</div>
+
+<script src="lib/daikon-shim.js"></script>
+<script src="lib/daikon-1.2.46.js"></script>
+<script src="lib/jspdf-4.2.1.umd.min.js"></script>
+<script src="lib/jszip-3.10.2.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
