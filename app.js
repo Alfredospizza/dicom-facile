@@ -14,12 +14,6 @@
   const TS_UNCOMPRESSED = new Set(['1.2.840.10008.1.2', '1.2.840.10008.1.2.1', '1.2.840.10008.1.2.2', '1.2.840.10008.1.2.1.99']);
   const TS_RLE = '1.2.840.10008.1.2.5';
   const TS_JPEG_BASELINE = '1.2.840.10008.1.2.4.50';
-  const MODALITY_IT = {
-    CT: 'TC', MR: 'Risonanza magnetica', US: 'Ecografia', CR: 'Radiografia', DX: 'Radiografia',
-    DR: 'Radiografia', MG: 'Mammografia', NM: 'Medicina nucleare', PT: 'PET', XA: 'Angiografia',
-    RF: 'Radioscopia', OT: 'Immagine', SC: 'Immagine', ES: 'Endoscopia', OP: 'Fotografia oculare',
-    OPT: 'OCT', IO: 'Radiografia dentale', PX: 'Panoramica dentale', SEG: 'Segmentazione',
-  };
 
   daikon.Image.skipPaletteConversion = true; // la palette la gestiamo noi (endianness corretta)
 
@@ -426,17 +420,17 @@
         let end = bytes.length;
         while (end > 0 && bytes[end - 1] === 0) end--;
         bytes = bytes.slice(0, end);
-        const title = tagText(img, 0x0042, 0x0010) || tagText(img, 0x0008, 0x103e) || 'Referto';
+        const title = tagText(img, 0x0042, 0x0010) || tagText(img, 0x0008, 0x103e) || 'Documento';
         const date = tagText(img, 0x0008, 0x0023) || tagText(img, 0x0008, 0x0020);
         const mime = tagText(img, 0x0042, 0x0012) || 'application/pdf';
         const ext = /pdf/i.test(mime) ? 'pdf' : /xml/i.test(mime) ? 'xml' : 'bin';
-        reports.push({ name: `${safeName(title, 'Referto')}${date ? `_${date}` : ''}.${ext}`, blob: new Blob([bytes], { type: mime }) });
+        reports.push({ name: `${safeName(title, 'Documento')}${date ? `_${date}` : ''}.${ext}`, blob: new Blob([bytes], { type: mime }) });
         continue;
       }
 
       const rows = img.getRows(); const cols = img.getCols();
       if (!rows || !cols || !img.getPixelData() || rows > 30000 || cols > 30000) {
-        if (tagText(img, 0x0008, 0x0060) === 'SR') errors.push(`${base}: referto strutturato (SR), non convertibile qui`);
+        if (tagText(img, 0x0008, 0x0060) === 'SR') errors.push(`${base}: documento strutturato (SR), non convertibile qui`);
         else skipped++;
         continue;
       }
@@ -467,7 +461,7 @@
     if (!records.length && !reports.length) {
       show('start');
       alert(entries.length
-        ? 'Non ho trovato immagini DICOM tra i file scelti. Prova a scegliere il file .zip con tutta la cartella dell\'esame.'
+        ? 'Non ho trovato immagini DICOM tra i file scelti. Prova a scegliere il file .zip con tutta la cartella.'
         : 'Nessun file selezionato.');
       return;
     }
@@ -495,7 +489,7 @@
       return {
         meta: m,
         number: m.seriesNumber,
-        desc: m.seriesDesc || m.studyDesc || MODALITY_IT[m.modality] || 'Serie',
+        desc: m.seriesDesc || m.studyDesc || 'Serie',
         modality: m.modality,
         date: m.seriesDate || m.studyDate,
         frames,
@@ -511,7 +505,7 @@
     const m = series[0] ? series[0].meta : {};
     const who = showName && m.patient ? `_${safeName(m.patient, '').replace(/ /g, '_')}` : '';
     const when = m.studyDate ? `_${m.studyDate}` : '';
-    return `Immagini_esame${who}${when}.pdf`;
+    return `DICOM_convertiti${who}${when}.pdf`;
   }
 
   // ------------------------------------------------------------------ PDF
@@ -532,7 +526,7 @@
 
     // copertina
     doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(20);
-    doc.text('Immagini esame diagnostico', M, M + 10);
+    doc.text('File DICOM convertiti', M, M + 10);
     let y = M + 24;
     const row = (label, value) => {
       doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(90);
@@ -543,13 +537,13 @@
       y += 6 * lines.length + 2;
     };
     const patients = [...new Set(series.map((s) => s.meta.patient).filter(Boolean))];
-    if (showName && patients.length) row('Paziente', patients.join(', '));
+    if (showName && patients.length) row('Nome', patients.join(', '));
     const studies = [];
     for (const s of series) {
       const k = [fmtDate(s.meta.studyDate), s.meta.studyDesc, s.meta.institution].filter(Boolean).join(' – ');
       if (k && !studies.includes(k)) studies.push(k);
     }
-    for (const st of studies) row('Esame', st);
+    for (const st of studies) row('Studio', st);
 
     y += 6;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(20);
@@ -574,13 +568,13 @@
     if (reports.length) {
       y += 6;
       doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-      doc.text('Referti trovati tra i file (allegati a parte):', M, y); y += 6;
+      doc.text('Documenti PDF trovati tra i file (allegati a parte):', M, y); y += 6;
       doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
       for (const r of reports.slice(0, 8)) { doc.text(`• ${r.name}`, M + 3, y); y += 5; }
     }
     doc.setFontSize(9); doc.setTextColor(100);
     const note = 'Nota: le immagini sono state convertite dai file DICOM originali per consentirne la visualizzazione ' +
-      'su qualsiasi dispositivo. Per una valutazione diagnostica fare riferimento ai file DICOM originali.';
+      'su qualsiasi dispositivo. I file originali contengono la qualità e i dati completi.';
     doc.text(doc.splitTextToSize(note, W - 2 * M), M, H - 30);
     footer();
 
@@ -648,7 +642,7 @@
       s.frames.forEach((f, i) => folder.file(`${prefix}_${pad(i + 1, 3)}.jpg`, f.blob));
     }
     if (res.reports.length) {
-      const r = zip.folder('Referti');
+      const r = zip.folder('Documenti');
       res.reports.forEach((rep) => r.file(rep.name, rep.blob));
     }
     return zip.generateAsync({ type: 'blob', compression: 'STORE' });
@@ -690,11 +684,11 @@
     const summary = $('#summary');
     summary.replaceChildren();
     const add = (k, v) => { if (v) summary.append(el('dt', {}, k), el('dd', {}, v)); };
-    if (ui.showName.checked) add('Paziente', m.patient);
-    add('Esame', [m.studyDesc, m.institution].filter(Boolean).join(' – '));
+    if (ui.showName.checked) add('Nome', m.patient);
+    add('Studio', [m.studyDesc, m.institution].filter(Boolean).join(' – '));
     add('Data', fmtDate(m.studyDate));
     add('Contenuto', `${res.series.length} ${res.series.length === 1 ? 'serie' : 'serie'} · ${total} ${total === 1 ? 'immagine' : 'immagini'}`);
-    if (res.reports.length) add('Referti', String(res.reports.length));
+    if (res.reports.length) add('Documenti', String(res.reports.length));
 
     const pdfUrl = track(URL.createObjectURL(res.pdfBlob));
     const dl = $('#downloadPdf');
@@ -805,7 +799,7 @@
 
   if (window.matchMedia('(pointer: fine)').matches && 'webkitdirectory' in ui.dirInput) {
     ui.pickDir.hidden = false;
-    $('#dropHint').textContent = 'Oppure trascina qui la cartella dell\'esame o un file .zip.';
+    $('#dropHint').textContent = 'Oppure trascina qui la cartella con i file DICOM o un file .zip.';
   }
 
   ['dragenter', 'dragover'].forEach((t) => ui.drop.addEventListener(t, (e) => {
@@ -827,7 +821,7 @@
     btn.disabled = true; btn.textContent = 'Preparo lo .zip…';
     try {
       const blob = await buildZip(current);
-      const name = current.pdfName.replace(/^Immagini_esame/, 'Immagini_JPG').replace(/\.pdf$/, '.zip');
+      const name = current.pdfName.replace(/^DICOM_convertiti/, 'Immagini_JPG').replace(/\.pdf$/, '.zip');
       const a = el('a', { href: track(URL.createObjectURL(blob)), download: name });
       document.body.append(a); a.click(); a.remove();
     } finally {

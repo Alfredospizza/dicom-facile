@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <title>DICOM Facile</title>
-<meta name="description" content="Converti i file DICOM (.dcm) di un esame in PDF e JPG direttamente sul tuo telefono. I file non vengono caricati da nessuna parte.">
+<meta name="description" content="Converti i file DICOM (.dcm) in PDF e JPG direttamente sul tuo dispositivo. I file non vengono caricati da nessuna parte.">
 <meta name="theme-color" content="#0f6b6b">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f6b6b'/%3E%3Cpath d='M20 18h14a14 14 0 0 1 0 28H20z' fill='none' stroke='white' stroke-width='6'/%3E%3C/svg%3E">
 <style>
@@ -159,8 +159,8 @@ footer.site a { color: inherit; }
   </div>
 
   <section id="start">
-    <h1>Apri le immagini di un esame su qualsiasi dispositivo</h1>
-    <p class="lead">Trasforma i file DICOM (.dcm) di TAC, risonanze, radiografie ed ecografie in un PDF e in immagini JPG, pronti da inviare.</p>
+    <h1>Converti i file DICOM in PDF e JPG</h1>
+    <p class="lead">Trasforma i file DICOM (.dcm) in un PDF e in immagini JPG che si aprono su qualsiasi dispositivo.</p>
 
     <div class="card privacy">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -180,14 +180,14 @@ footer.site a { color: inherit; }
         <input type="file" id="fileInput" multiple hidden>
         <input type="file" id="dirInput" webkitdirectory multiple hidden>
       </div>
-      <label class="option"><input type="checkbox" id="showName" checked> Mostra il nome del paziente nel PDF</label>
+      <label class="option"><input type="checkbox" id="showName" checked> Includi nel PDF il nome salvato nei file</label>
     </div>
 
     <div class="card">
       <details>
         <summary>Come fare su iPhone o iPad</summary>
         <ol>
-          <li>Apri l'app <strong>File</strong> e trova la cartella con le immagini dell'esame.</li>
+          <li>Apri l'app <strong>File</strong> e trova la cartella con i file DICOM.</li>
           <li>Tieni premuto sulla cartella e scegli <strong>Comprimi</strong>: si crea un file <em>.zip</em>.</li>
           <li>Torna qui, tocca <strong>Scegli i file</strong> → <strong>Sfoglia</strong> e seleziona il file .zip.</li>
         </ol>
@@ -196,20 +196,20 @@ footer.site a { color: inherit; }
       <details>
         <summary>Come fare su Android</summary>
         <ol>
-          <li>Tocca <strong>Scegli i file</strong> e seleziona i file dell'esame (puoi selezionarne molti tenendo premuto).</li>
+          <li>Tocca <strong>Scegli i file</strong> e seleziona i file DICOM (puoi selezionarne molti tenendo premuto).</li>
           <li>Se sono in una cartella compressa (.zip), scegli direttamente lo .zip.</li>
         </ol>
       </details>
       <details>
         <summary>Come fare su computer</summary>
-        <p>Trascina in questo riquadro la cartella dell'esame (anche quella copiata dal CD), oppure usa <strong>Scegli una cartella</strong>.</p>
+        <p>Trascina in questo riquadro la cartella con i file (anche quella copiata da un CD), oppure usa <strong>Scegli una cartella</strong>.</p>
       </details>
       <details>
         <summary>Cosa ottengo?</summary>
         <ul>
           <li>Un <strong>PDF unico</strong> con una pagina di riepilogo e tutte le immagini, ordinate per serie.</li>
           <li>Tutte le <strong>immagini in JPG</strong>, in un file .zip diviso per serie.</li>
-          <li>Gli eventuali <strong>referti PDF</strong> trovati tra i file.</li>
+          <li>Gli eventuali <strong>documenti PDF</strong> trovati tra i file.</li>
         </ul>
       </details>
     </div>
@@ -240,7 +240,7 @@ footer.site a { color: inherit; }
     </div>
 
     <div class="card" id="reportsCard" hidden>
-      <h2>Referti trovati</h2>
+      <h2>Documenti trovati</h2>
       <ul class="reports" id="reports"></ul>
     </div>
 
@@ -251,7 +251,7 @@ footer.site a { color: inherit; }
     </div>
 
     <div class="card">
-      <p class="small"><strong>Da sapere:</strong> PDF e JPG vanno benissimo per vedere e condividere l'esame. Per una valutazione diagnostica il medico potrebbe chiedere anche i file DICOM originali: conservali.</p>
+      <p class="small"><strong>Da sapere:</strong> PDF e JPG servono per vedere e condividere le immagini. Conserva anche i file DICOM originali: contengono la qualità e i dati completi.</p>
       <div class="row"><button class="btn" id="again" type="button">Converti altri file</button></div>
     </div>
   </section>
